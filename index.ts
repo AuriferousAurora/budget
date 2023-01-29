@@ -1,3 +1,4 @@
+import { Guid } from 'guid-typescript'
 import { parse } from 'csv-parse'
 import * as fs from 'fs'
 import * as path from 'path'
@@ -9,31 +10,31 @@ type Transaction = {
     amount: number
 }
 
+// todo: remove path hardcoding-- update parseTransactionFile to handle array of files
 const filePath = path.resolve(__dirname, 'data/2022-checking-account-transactions.csv')
 const headers = ['date', 'amount', 'description']
 const fileContent = fs.readFileSync(filePath, { encoding: 'utf-8'})
 
-let transactions: Array<Transaction> = []
+const parseTransactionFile = async (fc: string) => {
+    const parser = parse(fc, { delimiter: ',', columns: headers })
+    let transactions: Transaction[] = []
 
-
-parse(fileContent, { delimiter: ',', columns: headers }, (error, result: Transaction[]) => {
-    if (error) {
-        console.error(error);
-    }
-    const l = Object.getOwnPropertyNames(result).length - 1
-    const ids = [...Array(l).keys()]
-    for (let i = 0; i < l; i++) {
-        // todo: add uuid generation for ids
+    for await (const record of parser) {
         let transcation: Transaction = {
-            id: ids[i].toString(),
-            amount: result[i].amount,
-            date: result[i].date,
-            description: result[i].description
+            id: Guid.create().toString(),
+            amount: record.amount,
+            date: record.date,
+            description: record.description
         }
         transactions.push(transcation)
     }
-    console.log(transactions[0])
-})
 
+    return transactions
+}
+
+(async() => {
+    const transcations = await parseTransactionFile(fileContent)
+    transcations.forEach(t => console.log(t))
+})()
 
 

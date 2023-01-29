@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@types/node": "^18.11.18",
-    "csv-parse": "^5.3.3"
+    "csv-parse": "^5.3.3",
+    "guid-typescript": "^1.0.9"
   }
 }
